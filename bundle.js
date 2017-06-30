@@ -63,14 +63,50 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+class MovingObject {
+  constructor (game, hash) {
+    this.game = game;
+    this.pos = hash['pos'];
+    this.vel = hash['vel'];
+    this.radius = hash['radius'];
+    this.color = hash['color'];
+  }
+
+  move () {
+    this.pos[0] += this.vel[0];
+    this.pos[1] += this.vel[1];
+    this.game.wrap(this.pos);
+  }
+
+  draw (ctx) {
+    ctx.beginPath();
+    ctx.arc(this.pos[0], this.pos[1], this.radius, 2*Math.PI, false);
+    ctx.stroke();
+    ctx.fillStyle = this.color;
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  // isCollidedWith (otherObject) {
+  //
+  // }
+}
+
+module.exports = MovingObject;
+
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-let Game = __webpack_require__(3);
+let Game = __webpack_require__(4);
 
 class GameView {
   constructor (ctx) {
@@ -90,10 +126,10 @@ module.exports = GameView;
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-let MovingObject = __webpack_require__(4);
+let MovingObject = __webpack_require__(0);
 
 class Asteroid extends MovingObject {
   constructor (game, position, color = 'black') {
@@ -108,10 +144,10 @@ module.exports = Asteroid;
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-let GameView = __webpack_require__(0);
+let GameView = __webpack_require__(1);
 
 document.addEventListener("DOMContentLoaded", function(){
   const canvasEl = document.getElementById("game-canvas");
@@ -126,10 +162,11 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-let Asteroid = __webpack_require__(1);
+let Asteroid = __webpack_require__(2);
+let Ship = __webpack_require__(5);
 
 class Game {
   constructor () {
@@ -137,11 +174,18 @@ class Game {
     this.DIM_Y = 700;
     this.NUM_ASTEROIDS = 40;
     this.asteroids = this.addAsteroids();
+    // this.objects = this.allObjects();
   }
 
   randomPosition () {
     const position = [Math.floor(Math.random()*this.DIM_X), Math.floor(Math.random()*this.DIM_Y)];
     return position;
+  }
+
+  allObjects () {
+    let ship = new Ship(this, this.randomPosition());
+    let objects = this.asteroids.push(ship);
+    return objects;
   }
 
   addAsteroids () {
@@ -183,48 +227,25 @@ class Game {
 
 module.exports = Game;
 
-// document.addEventListener("DOMContentLoaded", function(){
-//   const canvasEl = document.getElementById("game-canvas");
-//   canvasEl.width = 1200;
-//   canvasEl.height = 700;
-//
-//   const ctx = canvasEl.getContext("2d");
-//
-//   let x = new Game();
-//   setInterval(() => x.draw(ctx), 20);
-// });
-
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports) {
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
 
-class MovingObject {
-  constructor (game, hash) {
-    this.game = game;
-    this.pos = hash['pos'];
-    this.vel = hash['vel'];
-    this.radius = hash['radius'];
-    this.color = hash['color'];
+let MovingObject = __webpack_require__(0);
+
+class Ship extends MovingObject {
+  constructor (game, position, color = 'red', radius = 10) {
+    this.COLOR = color;
+    this.RADIUS = radius;
+    this.vel = 0;
+    super(game, {pos: position, color: color, radius: radius});
   }
 
-  move () {
-    this.pos[0] += this.vel[0];
-    this.pos[1] += this.vel[1];
-    this.game.wrap(this.pos);
-  }
 
-  draw (ctx) {
-    ctx.beginPath();
-    ctx.arc(this.pos[0], this.pos[1], this.radius, 2*Math.PI, false);
-    ctx.stroke();
-    ctx.fillStyle = this.color;
-    ctx.fill();
-    ctx.closePath();
-  }
 }
 
-module.exports = MovingObject;
+module.exports = Ship;
 
 
 /***/ })
