@@ -63,21 +63,44 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-let MovingObject = __webpack_require__(2);
+let Game = __webpack_require__(3);
+
+class GameView {
+  constructor (ctx) {
+    this.game = new Game();
+    this.ctx = ctx;
+  }
+
+  start () {
+    setInterval( () => {
+      this.game.moveObjects();
+      this.game.draw(this.ctx);
+    }, 20);
+  }
+}
+
+module.exports = GameView;
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+let MovingObject = __webpack_require__(4);
 
 class Asteroid extends MovingObject {
-  constructor (position, color = 'black') {
-    const vel = [Math.floor(Math.random()*10)-5, Math.floor(Math.random()*10)-5];
+  constructor (game, position, color = 'black') {
+    const vel = [Math.random()*6-3, Math.random()*6-3];
     const radius = Math.floor(Math.random()*10)+10;
     // const position = [Math.floor(Math.random()*1000), Math.floor(Math.random()*700)];
-    super({pos: position, vel: vel, color: color, radius: radius});
+    super(game, {pos: position, vel: vel, color: color, radius: radius});
   }
 }
 
@@ -85,16 +108,34 @@ module.exports = Asteroid;
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-let Asteroid = __webpack_require__(0);
+let GameView = __webpack_require__(0);
+
+document.addEventListener("DOMContentLoaded", function(){
+  const canvasEl = document.getElementById("game-canvas");
+  canvasEl.width = 1200;
+  canvasEl.height = 700;
+
+  const ctx = canvasEl.getContext("2d");
+
+  const game = new GameView(ctx);
+  game.start();
+});
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+let Asteroid = __webpack_require__(1);
 
 class Game {
   constructor () {
     this.DIM_X = 1200;
     this.DIM_Y = 700;
-    this.NUM_ASTEROIDS = 1000;
+    this.NUM_ASTEROIDS = 40;
     this.asteroids = this.addAsteroids();
   }
 
@@ -106,7 +147,7 @@ class Game {
   addAsteroids () {
     let asteroids = [];
     for (let i = 0; i < this.NUM_ASTEROIDS; i++) {
-      asteroids.push(new Asteroid(this.randomPosition()));
+      asteroids.push(new Asteroid(this, this.randomPosition()));
     }
     return asteroids;
   }
@@ -124,28 +165,43 @@ class Game {
       this.asteroids[i].move();
     }
   }
+
+  wrap (pos) {
+    if (pos[0] > this.DIM_X) {
+      pos[0] = 0;
+    } else if (pos[0] < 0) {
+      pos[0] = this.DIM_X;
+    }
+    if (pos[1] > this.DIM_Y) {
+      pos[1] = 0;
+    } else if (pos[1] < 0) {
+      pos[1] = this.DIM_Y;
+    }
+
+  }
 }
 
 module.exports = Game;
 
-document.addEventListener("DOMContentLoaded", function(){
-  const canvasEl = document.getElementById("myCanvas");
-  canvasEl.width = 1200;
-  canvasEl.height = 700;
-
-  const ctx = canvasEl.getContext("2d");
-
-  let x = new Game();
-  setInterval(() => x.draw(ctx), 20);
-});
+// document.addEventListener("DOMContentLoaded", function(){
+//   const canvasEl = document.getElementById("game-canvas");
+//   canvasEl.width = 1200;
+//   canvasEl.height = 700;
+//
+//   const ctx = canvasEl.getContext("2d");
+//
+//   let x = new Game();
+//   setInterval(() => x.draw(ctx), 20);
+// });
 
 
 /***/ }),
-/* 2 */
+/* 4 */
 /***/ (function(module, exports) {
 
 class MovingObject {
-  constructor (hash) {
+  constructor (game, hash) {
+    this.game = game;
     this.pos = hash['pos'];
     this.vel = hash['vel'];
     this.radius = hash['radius'];
@@ -155,6 +211,7 @@ class MovingObject {
   move () {
     this.pos[0] += this.vel[0];
     this.pos[1] += this.vel[1];
+    this.game.wrap(this.pos);
   }
 
   draw (ctx) {
