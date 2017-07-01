@@ -174,7 +174,7 @@ class Game {
     this.DIM_Y = 700;
     this.NUM_ASTEROIDS = 40;
     this.asteroids = this.addAsteroids();
-    // this.objects = this.allObjects();
+    this.objects = this.allObjects();
   }
 
   randomPosition () {
@@ -236,10 +236,10 @@ let MovingObject = __webpack_require__(0);
 
 class Ship extends MovingObject {
   constructor (game, position, color = 'red', radius = 10) {
+    super(game, {pos: position, color: color, radius: radius});
     this.COLOR = color;
     this.RADIUS = radius;
     this.vel = 0;
-    super(game, {pos: position, color: color, radius: radius});
   }
 
 
